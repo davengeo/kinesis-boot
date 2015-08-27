@@ -101,7 +101,7 @@ public class CliController implements CommandLineRunner {
 
             // Put the result into record list. The result can be empty.
             records = result.getRecords();
-
+            LOG.info("Incoming records:" + records.size());
             for(Record record: records) {
                 LOG.info("record:" + new String(record.getData().array()) +
                         " partition:" + record.getPartitionKey());
@@ -123,7 +123,7 @@ public class CliController implements CommandLineRunner {
     private void kinesisProducer(KinesisProducerConfiguration config) throws UnsupportedEncodingException {
         KinesisProducer kinesis = new KinesisProducer(config);
         for (int i = 0; i < 100; ++i) {
-            ByteBuffer data = ByteBuffer.wrap("myData".getBytes("UTF-8"));
+            ByteBuffer data = ByteBuffer.wrap("myDataAndDenissIsGiantwarf".getBytes("UTF-8"));
             kinesis.addUserRecord("test", "myPartitionKey", data);
         }
     }
