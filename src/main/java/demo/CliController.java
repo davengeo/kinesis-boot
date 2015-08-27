@@ -34,7 +34,7 @@ public class CliController implements CommandLineRunner {
 
     private static void init() {
         // Ensure the JVM will refresh the cached IP values of AWS resources (e.g. service endpoints).
-        java.security.Security.setProperty("networkaddress.cache.ttl", "60");
+//        java.security.Security.setProperty("networkaddress.cache.ttl", "60");
 
         /*
          * The ProfileCredentialsProvider will return your [default]
