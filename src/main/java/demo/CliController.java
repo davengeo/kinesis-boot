@@ -4,27 +4,21 @@ import com.amazonaws.AmazonClientException;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.services.kinesis.AmazonKinesisClient;
-import com.amazonaws.services.kinesis.clientlibrary.interfaces.IRecordProcessorFactory;
-import com.amazonaws.services.kinesis.clientlibrary.lib.worker.InitialPositionInStream;
-import com.amazonaws.services.kinesis.clientlibrary.lib.worker.KinesisClientLibConfiguration;
-import com.amazonaws.services.kinesis.clientlibrary.lib.worker.Worker;
 import com.amazonaws.services.kinesis.model.*;
 import com.amazonaws.services.kinesis.producer.KinesisProducer;
 import com.amazonaws.services.kinesis.producer.KinesisProducerConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Controller;
 
 import java.io.UnsupportedEncodingException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
+@Order(1)
 @Controller
 public class CliController implements CommandLineRunner {
 
@@ -32,15 +26,7 @@ public class CliController implements CommandLineRunner {
 
     private static AWSCredentialsProvider credentialsProvider;
 
-    private static void init() {
-        // Ensure the JVM will refresh the cached IP values of AWS resources (e.g. service endpoints).
-//        java.security.Security.setProperty("networkaddress.cache.ttl", "60");
-
-        /*
-         * The ProfileCredentialsProvider will return your [default]
-         * credential profile by reading from the credentials file located at
-         * (~/.aws/credentials).
-         */
+    static  {
         credentialsProvider = new ProfileCredentialsProvider();
         try {
             credentialsProvider.getCredentials();
@@ -51,18 +37,17 @@ public class CliController implements CommandLineRunner {
         }
     }
 
-//    @Autowired
-//    KinesisConnector kinesisConnector;
-
     @Override
     public void run(String... args) throws Exception {
-        LOG.info("HELLO...");
+        LOG.info("Preparing INGESTING...");
         kinesisProducer(createKinesisProducerConfiguration());
         LOG.info("INGESTION DONE");
-//        consumeWithKCL();
+        readingKinesis();
+    }
+
+    private void readingKinesis() {
         AmazonKinesisClient client = new AmazonKinesisClient();
         client.setEndpoint("kinesis.eu-west-1.amazonaws.com", "kinesis", "eu-west-1");
-
         DescribeStreamRequest describeStreamRequest = new DescribeStreamRequest();
         describeStreamRequest.setStreamName("test");
         List<Shard> shards = new ArrayList<>();
@@ -89,6 +74,7 @@ public class CliController implements CommandLineRunner {
         LOG.info("shard length:" + shardIterator.length());
         List<Record> records;
 
+        //noinspection InfiniteLoopStatement
         while (true) {
 
             // Create a new getRecordsRequest with an existing shardIterator
@@ -117,7 +103,6 @@ public class CliController implements CommandLineRunner {
             shardIterator = result.getNextShardIterator();
         }
     }
-
 
 
     private void kinesisProducer(KinesisProducerConfiguration config) throws UnsupportedEncodingException {
